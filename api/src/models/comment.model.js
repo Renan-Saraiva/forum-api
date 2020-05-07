@@ -8,11 +8,10 @@ module.exports = mongoose => {
             type: String,
             required: true
         },
-        createdOn: {
-            type: Date,
-            default: Date.now
-        }
-    });
+        replies: [{
+            type: mongoose.Schema.Types.ObjectId, ref: 'comment'
+        }]
+    }, {timestamps: true});
 
     commentSchema.method("toJSON", function() {
         const { __v, _id, ...object } = this.toObject();

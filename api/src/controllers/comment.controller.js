@@ -5,7 +5,7 @@ const Comment = db.comments;
 
 // Create and Save a new Comment
 exports.create = (req, res) => {
-    
+
     if (!commentValidator.isValid(req, res))
         return;
 
@@ -67,7 +67,7 @@ exports.update = (req, res) => {
 
     if (!commentValidator.isValid(req, res))
         return;
-        
+
     const id = req.params.id;
 
     Comment.findByIdAndUpdate(id, req.body, { useFindAndModify: false })
@@ -108,7 +108,72 @@ exports.delete = (req, res) => {
         });
 };
 
-// Find all published Tutorials
-exports.findAllPublished = (req, res) => {
+// Create a reply and related a one comment
+exports.createReply = (req, res) => {
 
+    if (!commentValidator.isValid(req, res))
+        return;
+    
+    const id = req.params.id;
+
+    Comment.findById(id)
+        .then(comment => {
+            if (comment) {
+                // Create a reply
+                const reply = new Comment({
+                    text: req.body.text,
+                    user: req.body.user
+                });
+
+                // Save reply in the database
+                reply
+                    .save(reply)
+                    .then(createdReply => {
+                        comment.replies.push(createdReply);
+
+                        comment
+                            .save()
+                            .then(() => {
+                                res.send(createdReply);
+                            })
+                            .catch(err => {
+                                res.status(500).send({
+                                    message: err.message || "Some error occurred while set reply to comment."
+                                });
+                            });                        
+                    })
+                    .catch(err => {
+                        res.status(500).send({
+                            message: err.message || "Some error occurred while creating the reply."
+                        });
+                    });
+            }
+            else
+                res.status(404)
+                    .send({ message: "Comment not found" });
+        })
+        .catch(err => {
+            res.status(500)
+                .send({ message: "Error retrieving comment" });
+        });
+};
+
+// Find all published Tutorials
+exports.replies = (req, res) => {
+    const id = req.params.id;
+
+    Comment.findById(id)
+        .populate('replies')
+        .then(data => {
+            if (data)
+                res.send(data.replies);
+            else
+                res.status(404)
+                    .send({ message: "Comment not found" });
+
+        })
+        .catch(err => {
+            res.status(500)
+                .send({ message: "Error retrieving comment" });
+        });
 };
