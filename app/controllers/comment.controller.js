@@ -135,7 +135,6 @@ exports.createReply = (req, res) => {
             if (comment) {
                 // Create a reply
                 const reply = new Comment(req.body);
-
                 // Save reply in the database
                 reply
                     .save(reply)
