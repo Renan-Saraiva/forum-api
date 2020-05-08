@@ -2,7 +2,7 @@
   "name": "forum-api",
   "version": "1.0.0",
   "description": "",
-  "main": "./app/server.js",
+  "main": "./api/server.js",
   "scripts": {
     "test": "mocha './test/**/*.js' --timeout 10000",
     "start": "nodemon server"

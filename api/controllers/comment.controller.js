@@ -177,7 +177,6 @@ exports.replies = (req, res) => {
             else
                 res.status(404)
                     .send({ message: "Comment not found" });
-
         })
         .catch(err => {
             res.status(500)

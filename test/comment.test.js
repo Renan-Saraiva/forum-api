@@ -1,18 +1,15 @@
 //process.env.NODE_ENV = 'test';
 
 const mongoose = require("mongoose");
-const db = require('../app/models');
-
-//Require the dev-dependencies
+const db = require('../api/models');
 const chai = require('chai');
 const chaiHttp = require('chai-http');
-const server = require('../app/server');
+const server = require('../api/server');
 const should = chai.should();
 
 
 chai.use(chaiHttp);
 
-//Our parent block
 describe('Comments', () => {
 
     const resourceURL = '/api/comments';
@@ -27,14 +24,34 @@ describe('Comments', () => {
         });
     });
 
-    var commentUtils = {
+    var validators = {
         shouldBeCreatedWithSuccess: (res) => {
             res.should.have.status(200);
             res.body.should.be.a('object');
             res.body.should.have.property('id');
+        },
+        shouldBeUnprocessableEntity: (res) => {
+            res.should.have.status(422);
+            res.body.should.be.a('object');
+            res.body.should.have.property('errors');
+        },
+        createComment: () => {
+            return chai.request(server)
+                .post(resourceURL)
+                .send(validators.comment);
+        },
+        createReply: (commentId) => {
+            return chai.request(server)
+                    .post(`${resourceURL}/${commentId}/replies`)
+                    .send(validators.comment);
+        },
+        fakeId: '5eb38e87dfd54b4554423eac',
+        comment: {
+            text: "Comentário de teste",
+            user: "Usuário de teste"
         }
     }
-    
+
     /*
     * Test the /GET route
     */
@@ -52,7 +69,7 @@ describe('Comments', () => {
 
         it('não deve encontrar um comentário que não existe', (done) => {
             chai.request(server)
-                .get(`${resourceURL}/5eb38e87dfd54b4554423eac`)
+                .get(`${resourceURL}/${validators.fakeId}`)
                 .end((err, res) => {
                     res.should.have.status(404);
                     res.body.should.be.a('object');
@@ -60,23 +77,66 @@ describe('Comments', () => {
                     done();
                 });
         });
-
-        it('deve inserir um comentário e depois recuperar', (done) => {
-            const comment = {
-                text: "comentário de teste",
-                user: "Usuário de teste"
-            };
+        
+        it('não deve deve encontrar respostas de um comentário que não existe', (done) => {
             chai.request(server)
-                .post(resourceURL)
-                .send(comment)
+                .get(`${resourceURL}/${validators.fakeId}/replies`)
                 .end((err, res) => {
-                    commentUtils.shouldBeCreatedWithSuccess(res);
+                    res.should.have.status(404);
+                    res.body.should.be.a('object');
+                    res.body.should.have.property('message').eql("Comment not found");
+                    done();
+                });
+        });
+        
+        it('deve inserir um comentário e recuperar', (done) => {
+            validators.createComment()
+                .end((err, res) => {
+                    validators.shouldBeCreatedWithSuccess(res);
                     chai.request(server)
                         .get(`${resourceURL}/${res.body.id}`)
                         .end((err, res) => {
-                            commentUtils.shouldBeCreatedWithSuccess(res);
+                            validators.shouldBeCreatedWithSuccess(res);
                             done();
                         });
+                });
+        });
+
+
+        it('deve encontrar 2 comentários', (done) => {
+            validators.createComment()
+                .end((err, res) => {
+                    validators.shouldBeCreatedWithSuccess(res);
+                    validators.createComment().end((err, res) => {
+                        validators.shouldBeCreatedWithSuccess(res);
+                        chai.request(server)
+                            .get(resourceURL)
+                            .end((err, res) => {
+                                res.should.have.status(200);
+                                res.body.should.be.a('array');
+                                res.body.length.should.be.eql(2);
+                                done();
+                            });
+                    });
+                });
+        });
+
+        it('deve encontrar 1 resposta', (done) => {
+            validators.createComment()
+                .end((err, res) => {
+                    validators.shouldBeCreatedWithSuccess(res);
+                    var commentId = res.body.id;
+                    validators.createReply(commentId).end((err, res) => {
+                        validators.shouldBeCreatedWithSuccess(res);
+                        chai.request(server)
+                            .get(`${resourceURL}/${commentId}/replies`)
+                            .end((err, res) => {
+                                res.should.have.status(200);
+                                res.body.should.be.a('array');
+                                res.body.length.should.be.eql(1);
+                                done();
+                            });
+                    });
                 });
         });
     });
@@ -94,9 +154,7 @@ describe('Comments', () => {
                 .post(resourceURL)
                 .send(comment)
                 .end((err, res) => {
-                    res.should.have.status(422);
-                    res.body.should.be.a('object');
-                    res.body.should.have.property('errors');
+                    validators.shouldBeUnprocessableEntity(res);
                     res.body.errors[0].should.have.property('param').eql("text");
                     res.body.errors[0].should.have.property('msg').eql("text field is required");
                     done();
@@ -111,9 +169,7 @@ describe('Comments', () => {
                 .post(resourceURL)
                 .send(comment)
                 .end((err, res) => {
-                    res.should.have.status(422);
-                    res.body.should.be.a('object');
-                    res.body.should.have.property('errors');
+                    validators.shouldBeUnprocessableEntity(res);
                     res.body.errors[0].should.have.property('param').eql("user");
                     res.body.errors[0].should.have.property('msg').eql("user field is required");
                     done();
@@ -129,9 +185,7 @@ describe('Comments', () => {
                 .post(resourceURL)
                 .send(comment)
                 .end((err, res) => {
-                    res.should.have.status(422);
-                    res.body.should.be.a('object');
-                    res.body.should.have.property('errors');
+                    validators.shouldBeUnprocessableEntity(res);
                     res.body.errors[0].should.have.property('param').eql("text");
                     res.body.errors[0].should.have.property('msg').eql("text field is required");
                     done();
@@ -147,9 +201,7 @@ describe('Comments', () => {
                 .post(resourceURL)
                 .send(comment)
                 .end((err, res) => {
-                    res.should.have.status(422);
-                    res.body.should.be.a('object');
-                    res.body.should.have.property('errors');
+                    validators.shouldBeUnprocessableEntity(res);
                     res.body.errors[0].should.have.property('param').eql("user");
                     res.body.errors[0].should.have.property('msg').eql("user field is required");
                     done();
@@ -165,9 +217,7 @@ describe('Comments', () => {
                 .post(resourceURL)
                 .send(comment)
                 .end((err, res) => {
-                    res.should.have.status(422);
-                    res.body.should.be.a('object');
-                    res.body.should.have.property('errors');
+                    validators.shouldBeUnprocessableEntity(res);
                     res.body.errors[0].should.have.property('param').eql("text");
                     res.body.errors[0].should.have.property('msg').eql("text invalid type");
                     done();
@@ -183,52 +233,45 @@ describe('Comments', () => {
                 .post(resourceURL)
                 .send(comment)
                 .end((err, res) => {
-                    res.should.have.status(422);
-                    res.body.should.be.a('object');
-                    res.body.should.have.property('errors');
+                    validators.shouldBeUnprocessableEntity(res);
                     res.body.errors[0].should.have.property('param').eql("user");
                     res.body.errors[0].should.have.property('msg').eql("user invalid type");
                     done();
                 });
         });
 
+        it('não deve inserir uma resposta a um comentário que não existe', (done) => {
+            chai.request(server)
+                .post(`${resourceURL}/${validators.fakeId}/replies`)
+                .send(validators.comment)
+                .end((err, res) => {
+                    res.should.have.status(404);
+                    res.body.should.be.a('object');
+                    res.body.should.have.property('message').eql("Comment not found");
+                    done();
+                });
+        });
+
         it('deve inserir um comentário', (done) => {
-            const comment = {
-                text: "comentário de teste",
-                user: "Usuário de teste"
-            };
             chai.request(server)
                 .post(resourceURL)
-                .send(comment)
+                .send(validators.comment)
                 .end((err, res) => {
-                    commentUtils.shouldBeCreatedWithSuccess(res);
+                    validators.shouldBeCreatedWithSuccess(res);
                     done();
                 });
         });
 
         it('deve inserir uma resposta a um comentário', (done) => {
-            const comment = {
-                text: "comentário de teste",
-                user: "Usuário de teste"
-            };
-            chai.request(server)
-                .post(resourceURL)
-                .send(comment)
-                .end((err, res) => {
-                    commentUtils.shouldBeCreatedWithSuccess(res);
-                    const reply = {
-                        text: "resposta de um comentário",
-                        user: "Usuário de teste"
-                    };
-                    chai.request(server)
-                        .post(`${resourceURL}/${res.body.id}/replies`)
-                        .send(reply)
+            validators.createComment()
+                .end((err, res) => {                    
+                    validators.shouldBeCreatedWithSuccess(res);
+                    validators.createReply(res.body.id)
                         .end((err, res) => {
-                            commentUtils.shouldBeCreatedWithSuccess(res);
+                            validators.shouldBeCreatedWithSuccess(res);
                             done();
                         });
                 });
         });
     });
-
 });
