@@ -19,6 +19,12 @@ module.exports = mongoose => {
         return object;
     });
 
+    commentSchema.method("addReply", function(reply) {
+        this.replies.push(reply);
+        return this.save();        
+    });
+
+
     // Export comment model
     return mongoose.model('comment', commentSchema);    
 };

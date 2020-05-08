@@ -1,19 +1,28 @@
 const db = require("../models");
-const commentValidator = require('../validators/comment.validator')
+const { body, validationResult } = require('express-validator')
 
 const Comment = db.comments;
+
+exports.validate = () => {
+    return [
+        body('user', 'user field is required').notEmpty(),
+        body('user', 'user invalid type').isString(),
+        body('text', 'text field is required').notEmpty(),
+        body('text', 'text invalid type').isString()
+    ];
+}
 
 // Create and Save a new Comment
 exports.create = (req, res) => {
 
-    if (!commentValidator.isValid(req, res))
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        res.status(422).json({ errors: errors.array() });
         return;
+    }
 
     // Create a Tutorial
-    const comment = new Comment({
-        text: req.body.text,
-        user: req.body.user
-    });
+    const comment = new Comment(req.body);
 
     // Save Tutorial in the database
     comment
@@ -65,9 +74,11 @@ exports.findOne = (req, res) => {
 // Update a Comment by the id in the request
 exports.update = (req, res) => {
 
-    if (!commentValidator.isValid(req, res))
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        res.status(422).json({ errors: errors.array() });
         return;
-
+    }
     const id = req.params.id;
 
     Comment.findByIdAndUpdate(id, req.body, { useFindAndModify: false })
@@ -111,28 +122,25 @@ exports.delete = (req, res) => {
 // Create a reply and related a one comment
 exports.createReply = (req, res) => {
 
-    if (!commentValidator.isValid(req, res))
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        res.status(422).json({ errors: errors.array() });
         return;
-    
+    }
+
     const id = req.params.id;
 
     Comment.findById(id)
         .then(comment => {
             if (comment) {
                 // Create a reply
-                const reply = new Comment({
-                    text: req.body.text,
-                    user: req.body.user
-                });
+                const reply = new Comment(req.body);
 
                 // Save reply in the database
                 reply
                     .save(reply)
                     .then(createdReply => {
-                        comment.replies.push(createdReply);
-
-                        comment
-                            .save()
+                        comment.addReply(createdReply)
                             .then(() => {
                                 res.send(createdReply);
                             })
@@ -140,7 +148,7 @@ exports.createReply = (req, res) => {
                                 res.status(500).send({
                                     message: err.message || "Some error occurred while set reply to comment."
                                 });
-                            });                        
+                            });
                     })
                     .catch(err => {
                         res.status(500).send({
@@ -158,7 +166,7 @@ exports.createReply = (req, res) => {
         });
 };
 
-// Find all published Tutorials
+// Get all replies
 exports.replies = (req, res) => {
     const id = req.params.id;
 
