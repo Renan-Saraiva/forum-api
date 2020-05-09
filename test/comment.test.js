@@ -252,6 +252,32 @@ describe('Comments', () => {
                 });
         });
 
+        it('não deve dar um like no comentário que não existe', (done) => {
+            chai.request(server)
+                .put(`${resourceURL}/${validators.fakeId}/like`)
+                .send()
+                .end((err, res) => {
+                    res.should.have.status(404);
+                    res.body.should.be.a('object');
+                    res.body.should.have.property('message').eql("Comment not found");
+                    done();
+                });
+        });
+
+        it('deve dar um like a um comentário', (done) => {
+            validators.createComment()
+                .end((err, res) => {                    
+                    validators.shouldBeCreatedWithSuccess(res);
+                    chai.request(server)
+                        .put(`${resourceURL}/${res.body.id}/like`)
+                        .send()
+                        .end((err, res) => {
+                            res.should.have.status(200);
+                            done();
+                        });
+                });
+        });
+
         it('deve inserir um comentário', (done) => {
             chai.request(server)
                 .post(resourceURL)

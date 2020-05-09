@@ -8,6 +8,10 @@ module.exports = mongoose => {
             type: String,
             required: true
         },
+        likes: {
+            type: Number,
+            default: 0
+        },
         replies: [{
             type: mongoose.Schema.Types.ObjectId, ref: 'comment'
         }]
@@ -24,6 +28,10 @@ module.exports = mongoose => {
         return this.save();        
     });
 
+    commentSchema.method("addLike", function() {
+        this.likes++;
+        return this.save();        
+    });
 
     // Export comment model
     return mongoose.model('comment', commentSchema);    

@@ -37,11 +37,43 @@ exports.create = (req, res) => {
         });
 };
 
-// Retrieve all Comments from the database.
+// Retrieve comments
 exports.all = (req, res) => {
-    const all = {}
 
-    Comment.find(all)
+    //All
+    let filter = {};
+    if (req.query.text) {
+        filter.text = {
+            $regex: +req.query.text,
+            $options: "i"
+        }; 
+    }    
+    if (req.query.user) {
+        filter.user = {
+            $regex: +req.query.user,
+            $options: "i"
+        }; 
+    }
+
+    //Sort By createdAt or likes
+    let sort = {}
+    if (req.query.orderBy) {
+
+        switch(req.query.orderBy){
+            case "createdAt":
+                sort = { createdAt: 1 };
+                break;
+            case "likes":
+                sort = { likes: -1 };
+                break;
+            default:
+                res.status(400).send({ message: "Invalid orderBy filter" });
+                return;
+        }
+    }
+
+    Comment.find(filter)
+        .sort(sort)
         .then(data => {
             res.send(data);
         })
@@ -92,6 +124,37 @@ exports.update = (req, res) => {
             }
         })
         .catch(err => {
+            res.status(500).send({
+                message: "Error updating Comment with id=" + id
+            });
+        });
+};
+
+// Update a Comment by the id in the request
+exports.like = (req, res) => {
+    const id = req.params.id;
+
+    Comment.findById(id)
+        .then(data => {            
+            if (data)
+            {
+                data.addLike().then(() => {
+                    res.sendStatus(200);
+                })
+                .catch(err => {
+                    res.status(500).send({
+                        message: err.message || "Some error occurred while liked the comment."
+                    });
+                });
+            }
+            else {
+                res.status(404).send({
+                    message: "Comment not found"
+                });
+            }
+        })
+        .catch(err => {
+            console.log(err);
             res.status(500).send({
                 message: "Error updating Comment with id=" + id
             });

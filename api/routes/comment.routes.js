@@ -10,12 +10,13 @@ router.get("/", comments.all);
 router.get("/:id", comments.findOne);
 // Update a Comment with id
 router.put("/:id", comments.validate(), comments.update);
+// Add a like to Comment
+router.put("/:id/like",  comments.like);
 // Delete a Comment with id
 router.delete("/:id", comments.delete);  
-
 // Retrieve all replies
 router.get("/:id/replies", comments.replies);
-// Retrieve all replies
+// Post a replies
 router.post("/:id/replies", comments.validate(), comments.createReply);
 
 module.exports = router;
