@@ -68,7 +68,7 @@ var GetSort = (req) => {
 
         switch(req.query.orderBy){
             case "createdAt":
-                sort = { createdAt: 1 };
+                sort = { createdAt: -1 };
                 break;
             case "likes":
                 sort = { likes: -1 };
