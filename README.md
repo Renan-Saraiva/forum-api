@@ -18,9 +18,9 @@ DBURI=
 
 #### Abaixo as decrições de cada chave
 
-DBUSER = Usuário para conexão ao banco MongoDB
-DBPASSWORD = Senha para conexão ao banco MongoDB
-DBURI = Endereço da instância do banco MongoDB
+- DBUSER = Usuário para conexão ao banco MongoDB
+- DBPASSWORD = Senha para conexão ao banco MongoDB
+- DBURI = Endereço da instância do banco MongoDB
 
 
 - O frontend para esta API pode ser encontrado [neste](https://github.com/Renan-Saraiva/forum-app) repositório.
