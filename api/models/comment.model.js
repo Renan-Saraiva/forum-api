@@ -12,6 +12,10 @@ module.exports = mongoose => {
             type: Number,
             default: 0
         },
+        isPost: {
+            type: Boolean,
+            default: true
+        },
         replies: [{
             type: mongoose.Schema.Types.ObjectId, ref: 'comment'
         }]

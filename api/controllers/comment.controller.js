@@ -23,7 +23,7 @@ exports.create = (req, res) => {
 
     // Create a Tutorial
     const comment = new Comment(req.body);
-
+    comment.isPost = true;
     // Save Tutorial in the database
     comment
         .save(comment)
@@ -37,25 +37,32 @@ exports.create = (req, res) => {
         });
 };
 
-// Retrieve comments
-exports.all = (req, res) => {
-
-    //All
-    let filter = {};
+var GetFilter = (req) => {
+    const filter = {};
+    if (req.query.isPost) {
+        if (req.query.isPost.toLowerCase() == "true")
+            filter.isPost = true;
+        else if (req.query.isPost.toLowerCase() == "false")
+            filter.isPost = false;
+        else
+            filter.isInvalid = ["isPost"];
+    }
     if (req.query.text) {
         filter.text = {
-            $regex: +req.query.text,
+            $regex: req.query.text,
             $options: "i"
         }; 
     }    
     if (req.query.user) {
         filter.user = {
-            $regex: +req.query.user,
+            $regex: req.query.user,
             $options: "i"
         }; 
     }
+    return filter;
+}
 
-    //Sort By createdAt or likes
+var GetSort = (req) => {    
     let sort = {}
     if (req.query.orderBy) {
 
@@ -67,10 +74,28 @@ exports.all = (req, res) => {
                 sort = { likes: -1 };
                 break;
             default:
-                res.status(400).send({ message: "Invalid orderBy filter" });
-                return;
+                sort.isInvalid = true;            
         }
     }
+    return sort;
+}
+
+// Retrieve comments
+exports.all = (req, res) => {            
+    
+    const filter = GetFilter(req);
+    const sort = GetSort(req);
+    
+    if (filter.isInvalid) { 
+        res.status(400).send({ message: `Invalid ${filter.isInvalid} parameter` });
+        return;
+    }
+
+    if (sort.isInvalid) {
+        res.status(400).send({ message: "Invalid orderBy parameter" });
+        return;
+    }
+        
 
     Comment.find(filter)
         .sort(sort)
@@ -87,6 +112,13 @@ exports.all = (req, res) => {
 // Find a single Comment with an id
 exports.findOne = (req, res) => {
     const id = req.params.id;
+
+    if (!db.mongoose.Types.ObjectId.isValid(id)){
+        res.status(404)
+            .send({ message: "Comment not found" });
+
+        return;
+    }
 
     Comment.findById(id)
         .then(data => {
@@ -139,7 +171,7 @@ exports.like = (req, res) => {
             if (data)
             {
                 data.addLike().then(() => {
-                    res.sendStatus(200);
+                    res.sendStatus(204);
                 })
                 .catch(err => {
                     res.status(500).send({
@@ -197,7 +229,8 @@ exports.createReply = (req, res) => {
         .then(comment => {
             if (comment) {
                 // Create a reply
-                const reply = new Comment(req.body);
+                const reply = new Comment(req.body);                
+                reply.isPost = false;
                 // Save reply in the database
                 reply
                     .save(reply)

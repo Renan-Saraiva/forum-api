@@ -272,7 +272,7 @@ describe('Comments', () => {
                         .put(`${resourceURL}/${res.body.id}/like`)
                         .send()
                         .end((err, res) => {
-                            res.should.have.status(200);
+                            res.should.have.status(204);
                             done();
                         });
                 });
