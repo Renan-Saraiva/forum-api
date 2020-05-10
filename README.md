@@ -28,16 +28,16 @@ O frontend para esta API pode ser encontrado [neste](https://github.com/Renan-Sa
 
 ## Executar os teste
 
-- Com o terminal de sua preferência entre na pasta raiz do projeto
-- Execute o comando `npm install` para instalar todas as dependências
-- Execute o comando `npm run teste` para iniciar os testes
+1. Com o terminal de sua preferência entre na pasta raiz do projeto
+2. Execute o comando `npm install` para instalar todas as dependências
+3. Execute o comando `npm run teste` para iniciar os testes
 
 ## Executar a aplicação
 
-- Com o terminal de sua preferência entre na pasta raiz do projeto
-- Execute o comando `npm install` para instalar todas as dependências
-- Execute o comando `npm run start` para iniciar a aplicação
-- Por default a aplicação estará rodando na porta [8080](http://localhost:8080/)
+1. Com o terminal de sua preferência entre na pasta raiz do projeto
+2. Execute o comando `npm install` para instalar todas as dependências
+3. Execute o comando `npm run start` para iniciar a aplicação
+4. Por default a aplicação estará rodando na porta [8080](http://localhost:8080/)
 
 ## Documentação da API
 
