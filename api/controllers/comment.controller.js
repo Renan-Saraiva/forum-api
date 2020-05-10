@@ -1,5 +1,5 @@
 const db = require("../models");
-const { body, validationResult } = require('express-validator')
+const { body, query, validationResult } = require('express-validator')
 
 const Comment = db.comments;
 
@@ -8,7 +8,8 @@ exports.validate = () => {
         body('user', 'user field is required').notEmpty(),
         body('user', 'user invalid type').isString(),
         body('text', 'text field is required').notEmpty(),
-        body('text', 'text invalid type').isString()
+        body('text', 'text invalid type').isString(),
+        body('likes', 'Invalid likes field').isInt({min: 0}).optional()
     ];
 }
 
@@ -96,6 +97,11 @@ exports.all = (req, res) => {
         return;
     }
         
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        res.status(422).json({ errors: errors.array() });
+        return;
+    }
 
     Comment.find(filter)
         .sort(sort)
