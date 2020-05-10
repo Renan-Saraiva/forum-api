@@ -23,7 +23,7 @@ DBURI=
 - DBURI = Endereço da instância do banco MongoDB
 
 
-- O frontend para esta API pode ser encontrado [neste](https://github.com/Renan-Saraiva/forum-app) repositório.
+O frontend para esta API pode ser encontrado [neste](https://github.com/Renan-Saraiva/forum-app) repositório.
 
 
 ## Executar os teste
