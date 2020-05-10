@@ -41,4 +41,4 @@ DBURI = Endereço da instância do banco MongoDB
 
 ## Documentação da API
 
-Com o software [Insomnia] (https://insomnia.rest/) é possível visualizar a documentação da API, basta realizar o download do mesmo e importar o arquivo [Insomnia.json](https://github.com/Renan-Saraiva/forum-api/blob/master/Insomnia.json) no diretório raiz da aplicação
+Com o software [Insomnia] (https://insomnia.rest/) é possível visualizar a documentação da API, basta realizar o download do mesmo e importar o arquivo [Insomnia.json](https://github.com/Renan-Saraiva/forum-api/blob/master/Insomnia.json) no diretório raiz da aplicação, a documentação de cada método pode ser visualizada na aba docs da requisição.
