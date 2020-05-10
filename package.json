@@ -5,7 +5,8 @@
   "main": "./api/server.js",
   "scripts": {
     "test": "mocha './test/**/*.js' --timeout 10000",
-    "start": "nodemon server"
+    "dev": "nodemon server",
+    "start": "node api/server"
   },
   "keywords": [],
   "author": "Renan Magalhães Saraiva",
