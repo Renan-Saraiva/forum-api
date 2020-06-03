@@ -6,7 +6,9 @@
   "scripts": {
     "test": "mocha './test/**/*.js' --timeout 10000",
     "dev": "nodemon server",
-    "start": "node api/server"
+    "start": "node api/server",
+    "docker-build": "docker build -t forum-api .",
+    "docker-run": "docker run -p 3000:3000 -d --name forum-api forum-api"
   },
   "keywords": [],
   "author": "Renan Magalhães Saraiva",
